@@ -52,7 +52,9 @@ class Parser
   # It WILL, however, send separate VARIANT: lines for those variants.
   # If we ever care about what variants are in the base games, we should take a look at parsing that.
   START_LINE = /^The game has started. There are (\d+) players, with (\d+) spies\./
-  AVALON_LINE = /^This is Resistance: Avalon, with (.*)\. Using variants:(.*)$/
+  # "Using variants" was added in March 2013 or thereabouts - earlier logs won't have it.
+  # But we really want to correctly identify Avalon games nevertheless.
+  AVALON_LINE = /^This is Resistance: Avalon, with (.*)\.(?: Using variants:(.*))?$/
   ORDER_LINE = /^Player order is: (.*)$/
   SCORE_LINE = /^(O|X)(?: (O|X))?(?: (O|X))?(?: (O|X))?(?: (O|X))?$/
   RESET_LINE = /^The game has been reset\.$/
@@ -89,7 +91,7 @@ class Parser
         warn('Avalon line but not started - making new game')
         new_game(time)
       end
-      @current_game.avalon!(roles: m[1].split(', '), variants: m[2].split(', '))
+      @current_game.avalon!(roles: m[1].split(', '), variants: m[2] ? m[2].split(', ') : [])
       @state = State::STARTED_AVALON
 
     elsif m = ORDER_LINE.match(text)
