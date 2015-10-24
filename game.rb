@@ -56,8 +56,8 @@ class Game
   end
 
   def assassination_duration
-    return 0 unless @avalon
-    return 0 unless @mission_end_time && @assassination_end_time
+    # Only exists in Avalon games with an assassination.
+    return 0 unless @avalon && res_score == 3
     @assassination_end_time - @mission_end_time
   end
 
