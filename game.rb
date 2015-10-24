@@ -118,6 +118,16 @@ class Game
   end
 
   def begin_assassination(time)
+    unless @avalon
+      # We'll be forgiving for games that are started from incomplete logs...
+      # "from incomplete logs" is currently detected by num_{players,spies} being nil
+      if @start_complete
+        raise "assassination in a non-avalon game #{self}"
+      else
+        @avalon = true
+      end
+    end
+
     # TODO: We'd like to check @avalon here, but some Assassin games don't get that set (incomplete logs, etc.)
     raise "Missions already ended at #{@mission_end_time} on #{self}, can't assassinate" if @mission_end_time
     @mission_end_time = time
