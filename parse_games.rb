@@ -87,6 +87,7 @@ def player_stats(games, name)
     'Won' => ->(x) { x.winning_side == :resistance },
     'died' => ->(x) { x.assassin_target == name},
     'let spies win missions' => ->(x) { x.spy_score == 3 },
+    'rejected hammer' => :hammer_rejected?,
   }).join(', ')
   lines << "AS MERLIN (#{merlin.size} games): #{merlin_stats}"
 
@@ -95,12 +96,14 @@ def player_stats(games, name)
     'other Non-Merlin got killed (win)' => ->(x) { x.assassin_target != name && x.winning_side == :resistance },
     'let Merlin die' => ->(x) { x.res_score == 3 && x.winning_side == :spies },
     'let spies win missions' => ->(x) { x.spy_score == 3 },
+    'rejected hammer' => :hammer_rejected?,
   }).join(', ')
   lines << "AS NON-MERLIN RES (#{nonmerlin.size} games): #{nonmerlin_stats}"
 
   av_spy_stats = categorize_games(av_spy, {
     'Won on missions' => ->(x) { x.spy_score == 3 },
     'killed Merlin' => ->(x) { x.res_score == 3 && x.winning_side == :spies },
+    'rejected hammer' => :hammer_rejected?,
     'lost' => ->(x) { x.res_score == 3 && x.winning_side == :resistance },
   }).join(', ')
   lines << "AS SPY (#{av_spy.size} games): #{av_spy_stats}"
