@@ -39,6 +39,7 @@ class Parser
 
     # We're waiting for the line that says "The spies were: ". Reached if:
     # Someone wins on missions ({SPY,RES}_WIN_LINE, normally from IN_PROGRESS)
+    # Hammer rejected (HAMMER_REJECT_LINE, normally from IN_PROGRESS)
     # Assassination result from non-legacy assassination (ASSASSIN_{WIN,LOSE}_LINE, only from ASSASSINATION)
     WAITING_SPY_LINE = 6
 
@@ -58,6 +59,8 @@ class Parser
   ORDER_LINE = /^Player order is: (.*)$/
   SCORE_LINE = /^(O|X)(?: (O|X))?(?: (O|X))?(?: (O|X))?(?: (O|X))?$/
   RESET_LINE = /^The game has been reset\.$/
+
+  HAMMER_REJECT_LINE = /^This team is NOT going on the mission\. Reject count: 5$/
 
   SPY_WIN_LINE = /^Game is over! The spies have won!$/
   RES_WIN_LINE = /^Game is over! The resistance wins!$/
@@ -109,6 +112,14 @@ class Parser
         @state = State::IN_PROGRESS
       end
       @current_game.mission_success = text.split.map { |x| x == ?O }
+
+    elsif m = HAMMER_REJECT_LINE.match(text)
+      if @state != State::IN_PROGRESS
+        warn('Hammer reject line but not inprogress - making new game', time)
+        new_game(time)
+        @state = State::IN_PROGRESS
+      end
+      @current_game.hammer_rejected!
 
     elsif m = SPY_WIN_LINE.match(text)
       if @state != State::IN_PROGRESS

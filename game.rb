@@ -7,11 +7,13 @@ class Game
   attr_reader :avalon, :avalon_roles, :avalon_variants
   attr_reader :mission_success
   attr_reader :winning_side
+  attr_reader :hammer_rejected
   attr_reader :assassin_target
   attr_reader :roles
   attr_reader :resistance_players, :spy_players
 
   alias :avalon? :avalon
+  alias :hammer_rejected? :hammer_rejected
 
   def initialize(start_time, num_players, num_spies)
     @start_time = start_time
@@ -28,6 +30,7 @@ class Game
     @avalon_variants = [].freeze
     @mission_success = [].freeze
     @winning_side = nil
+    @hammer_rejected = false
     @assassin_target = nil
     @roles = {}.freeze
     @resistance_players = [].freeze
@@ -117,6 +120,10 @@ class Game
     @winning_side = winner
   end
 
+  def hammer_rejected!
+    @hammer_rejected = true
+  end
+
   def begin_assassination(time)
     unless @avalon
       # We'll be forgiving for games that are started from incomplete logs...
@@ -136,6 +143,7 @@ class Game
   def win_on_missions(winner, time)
     raise "Missions already ended at #{@mission_end_time} on #{self}, can't let #{winner} win on missions" if @mission_end_time
     raise "#{@winning_side} already won on #{self}, can't let #{winner} win on missions" if @winning_side
+    raise "Hammer rejected on #{self}, how did #{winner} win?" if @hammer_rejected && winner != :spies
     @winning_side = winner
     @mission_end_time = time
   end
