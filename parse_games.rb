@@ -56,6 +56,13 @@ def game_stats(games)
   STATS
 end
 
+# categories should be an Hash where each key is a description,
+# and the corresponding value is a one-argument block.
+# The block returns true if the game counts for that category.
+def categorize_games(games, categories)
+  categories.map { |desc, block| "#{desc} #{games.count(&block)} games" }
+end
+
 def player_stats(games, name)
   lines = ["Stats for #{name}"]
   av_games, base_games = games.partition(&:avalon?)
@@ -76,21 +83,27 @@ def player_stats(games, name)
 
   lines << "AVALON: As res, won #{av_res_win}/#{av_res.size} games. As spy, won #{av_spy_win}/#{av_spy.size} games."
 
-  merlin_win = merlin.count { |x| x.winning_side == :resistance }
-  merlin_dead = merlin.count { |x| x.assassin_target == name }
-  merlin_fail = merlin.count { |x| x.spy_score == 3 }
-  lines << "AS MERLIN (#{merlin.size} games): Won #{merlin_win} games, died #{merlin_dead} games, let spies win missions #{merlin_fail} games"
+  merlin_stats = categorize_games(merlin, {
+    'Won' => ->(x) { x.winning_side == :resistance },
+    'died' => ->(x) { x.assassin_target == name},
+    'let spies win missions' => ->(x) { x.spy_score == 3 },
+  }).join(', ')
+  lines << "AS MERLIN (#{merlin.size} games): #{merlin_stats}"
 
-  nonmerlin_dead = nonmerlin.count { |x| x.assassin_target == name }
-  nonmerlin_win = nonmerlin.count { |x| x.assassin_target != name && x.winning_side == :resistance }
-  nonmerlin_merlin_died = nonmerlin.count { |x| x.res_score == 3 && x.winning_side == :spies }
-  nonmerlin_missions = nonmerlin.count { |x| x.spy_score == 3 }
-  lines << "AS NON-MERLIN RES (#{nonmerlin.size} games): Got killed (win) #{nonmerlin_dead} games, other Non-Merlin got killed (win) #{nonmerlin_win} games, let Merlin die #{nonmerlin_merlin_died} games, let spies win missions #{nonmerlin_missions} games"
+  nonmerlin_stats = categorize_games(nonmerlin, {
+    'Got killed (win)' => ->(x) { x.assassin_target == name },
+    'other Non-Merlin got killed (win)' => ->(x) { x.assassin_target != name && x.winning_side == :resistance },
+    'let Merlin die' => ->(x) { x.res_score == 3 && x.winning_side == :spies },
+    'let spies win missions' => ->(x) { x.spy_score == 3 },
+  }).join(', ')
+  lines << "AS NON-MERLIN RES (#{nonmerlin.size} games): #{nonmerlin_stats}"
 
-  av_spy_mission = av_spy.count { |x| x.spy_score == 3 }
-  av_spy_assassination = av_spy.count { |x| x.res_score == 3 && x.winning_side == :spies }
-  av_spy_loss = av_spy.count { |x| x.res_score == 3 && x.winning_side == :resistance }
-  lines << "AS SPY (#{av_spy.size} games): Won on missions #{av_spy_mission} games, killed Merlin #{av_spy_assassination} games, lost #{av_spy_loss} games"
+  av_spy_stats = categorize_games(av_spy, {
+    'Won on missions' => ->(x) { x.spy_score == 3 },
+    'killed Merlin' => ->(x) { x.res_score == 3 && x.winning_side == :spies },
+    'lost' => ->(x) { x.res_score == 3 && x.winning_side == :resistance },
+  }).join(', ')
+  lines << "AS SPY (#{av_spy.size} games): #{av_spy_stats}"
 
   lines
 end
