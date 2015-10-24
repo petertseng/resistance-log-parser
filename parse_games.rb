@@ -79,13 +79,13 @@ def player_stats(games, name)
   merlin_win = merlin.count { |x| x.winning_side == :resistance }
   merlin_dead = merlin.count { |x| x.assassin_target == name }
   merlin_fail = merlin.count { |x| x.spy_score == 3 }
-  lines << "AS MERLIN (#{merlin.size} games): Won #{merlin_win} games, died #{merlin_dead} games, let spies win #{merlin_fail} games"
+  lines << "AS MERLIN (#{merlin.size} games): Won #{merlin_win} games, died #{merlin_dead} games, let spies win missions #{merlin_fail} games"
 
   nonmerlin_dead = nonmerlin.count { |x| x.assassin_target == name }
   nonmerlin_win = nonmerlin.count { |x| x.assassin_target != name && x.winning_side == :resistance }
   nonmerlin_merlin_died = nonmerlin.count { |x| x.res_score == 3 && x.winning_side == :spies }
   nonmerlin_missions = nonmerlin.count { |x| x.spy_score == 3 }
-  lines << "AS NON-MERLIN RES (#{nonmerlin.size} games): Got killed (win) #{nonmerlin_dead} games, other Non-Merlin got killed (win) #{nonmerlin_win} games, let Merlin die #{nonmerlin_merlin_died} games, let spies win #{nonmerlin_missions} games"
+  lines << "AS NON-MERLIN RES (#{nonmerlin.size} games): Got killed (win) #{nonmerlin_dead} games, other Non-Merlin got killed (win) #{nonmerlin_win} games, let Merlin die #{nonmerlin_merlin_died} games, let spies win missions #{nonmerlin_missions} games"
 
   av_spy_mission = av_spy.count { |x| x.spy_score == 3 }
   av_spy_assassination = av_spy.count { |x| x.res_score == 3 && x.winning_side == :spies }
