@@ -1,6 +1,7 @@
 require 'time'
 
 require_relative 'parser'
+require_relative 'player'
 
 # This is the format of one log line.
 # First capture group is the time, second capture group is text.
@@ -110,6 +111,45 @@ def player_stats(games, name)
 
   lines
 end
+
+base_players = Hash.new { |h, k| h[k] = Player.new(k) }
+avalon_players = Hash.new { |h, k| h[k] = Player.new(k) }
+all_players = Hash.new { |h, k| h[k] = Player.new(k) }
+
+games.each { |g|
+  hs = g.avalon? ? [avalon_players, all_players] : [base_players, all_players]
+  hs.each { |h|
+    g.resistance_players.each { |p| h[p].play_res(win: g.winning_side == :resistance) }
+    g.spy_players.each { |p| h[p].play_spy(win: g.winning_side == :spies) }
+  }
+}
+
+sides = {
+  'rebels' => :res,
+  'spies' => :spy,
+}
+game_types = {
+  'base' => base_players.values,
+  'avalon' => avalon_players.values,
+}
+
+def leaderboard(players, side_sym)
+  players.select(&:"#{side_sym}_significant?").sort_by(&:"#{side_sym}_winrate").reverse.map { |x| x.to_s(type: side_sym) }
+end
+
+game_types.each { |type, type_players|
+  sides.each { |side_name, side_sym|
+    puts "best #{type} #{side_name}".upcase
+    puts leaderboard(type_players, side_sym)
+    puts
+  }
+}
+
+sides.each { |side_name, side_sym|
+  puts "best #{side_name}".upcase
+  puts leaderboard(all_players.values, side_sym)
+  puts
+}
 
 puts 'GLOBAL STATS'
 puts game_stats(games)
