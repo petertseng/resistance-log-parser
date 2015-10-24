@@ -20,6 +20,8 @@ class Game
 
     @num_players = num_players
     @num_spies = num_spies
+    @start_complete = !num_players.nil? && !num_spies.nil?
+
     @order = nil
     @avalon = false
     @avalon_roles = [].freeze
@@ -30,6 +32,10 @@ class Game
     @roles = {}.freeze
     @resistance_players = [].freeze
     @spy_players = [].freeze
+  end
+
+  def complete?
+    @winning_side && @start_complete
   end
 
   def res_score
