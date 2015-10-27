@@ -75,7 +75,7 @@ class Game
 
   def to_s
     type = @avalon ? 'Avalon' : 'Base'
-    "Game #{start_time} #{num_players} #{type} #{res_score}-#{spy_score} R: #{@resistance_players} S: #{@spy_players} W: #{winning_players}"
+    "Game #{start_time} #{num_players}p #{type} #{res_score}-#{spy_score} R: #{@resistance_players.join(', ')} S: #{@spy_players.join(', ')} W: #{winning_players.join(', ')}"
   end
 
   def order=(order)
