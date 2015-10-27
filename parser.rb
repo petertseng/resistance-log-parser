@@ -195,12 +195,13 @@ class Parser
       @state = State::WAITING_RES_LINE
 
     elsif m = RES_LIST_LINE.match(text)
+      reconstruct = false
+
       if @state != State::WAITING_RES_LINE
         # This cannot happen from !reset (Spy list must come first)
         # HOWEVER, it can occur from the games where spies did not get listed in assassination!
         if @current_game.resistance_players.empty?
-          warn('Res list unexpected - spy list needs to be reconstructed', time)
-          # TODO actually reconstruct
+          reconstruct = true
         else
           warn('Res list unexpected - making new game', time)
           new_game(time)
@@ -209,6 +210,21 @@ class Parser
 
       @current_game.resistance = m[1]
       @state = State::IDLE
+
+      if reconstruct
+        if @current_game.order
+          # For most games this works OK.
+          # HOWEVER, there are games where a resistance player changes nick.
+          # This means that player gets identified as a spy player instead.
+          # Not much we can do about that.
+          # It's not so bad though since it affects only one player.
+          spy_team = @current_game.order - @current_game.resistance_players
+          @current_game.spies = spy_team.join(', ')
+          info("Reconstructing spy team as #{spy_team}", time)
+        else
+          warn('Res list unexpected and could not reconstruct spy team', time)
+        end
+      end
 
     elsif m = RESET_LINE.match(text)
       @state = State::IDLE
