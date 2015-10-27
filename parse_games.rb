@@ -33,11 +33,11 @@ puts "#{games.size} non-reset games"
 puts
 
 longest_game = games.max_by(&:duration)
-puts "Longest game: #{longest_game} with #{longest_game.duration}"
+puts "Longest game: #{longest_game} from #{longest_game.start_time} to #{longest_game.end_time} lasting #{longest_game.duration / 60.0} mins"
 puts
 
 longest_assassination_game = games.max_by(&:assassination_duration)
-puts "Longest assassination game: #{longest_assassination_game} with #{longest_assassination_game.assassination_duration}"
+puts "Longest assassination game: #{longest_assassination_game} from #{longest_assassination_game.mission_end_time} to #{longest_assassination_game.assassination_end_time} lasting #{longest_assassination_game.assassination_duration / 60.0} mins"
 puts
 
 # Global stats
